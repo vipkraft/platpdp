@@ -1466,13 +1466,12 @@ object Form1: TForm1
     SimplePanel = False
   end
   object Label9: TLabel
-    Left = 392
+    Left = 382
     Height = 18
-    Top = 320
+    Top = 314
     Width = 44
     Caption = 'Label9'
     ParentColor = False
-    Visible = False
   end
   object Label22: TLabel
     Left = 210

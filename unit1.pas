@@ -270,7 +270,7 @@ var
   sprupdatetimes=2;
   lenarrans=4;
   maxuploadtime=30;
-  waitforanswer=4;
+  waitforanswer=18;
   upperactual=80;
 
 
@@ -5152,7 +5152,7 @@ end;
 
 //---------- ПРИЕМ ФАЙЛОВ ОТВЕТОВ -------------------------------
 procedure TForm1.Files_to_get();
-const alimit=10;
+const alimit=1000;
 var
 idpoint:integer;
 begin
@@ -5177,7 +5177,7 @@ begin
   mess_log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
   mess_log(formatdatetime('hh:nn:ss.zzz',now())+'======== ЗАПРОС ФАЙЛОВ БЕЗ ОТВЕТОВ. НАЧАЛО. ======5=');
  //если неотвеченных файлов больше чем limit в запросе, то сбрасываем
- If alimit=attempt then attempt:=0;
+ If alimit>=attempt then attempt:=0;
   idpoint:=0;
   //setlength(arans,0,0);
 
