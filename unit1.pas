@@ -77,6 +77,7 @@ type
     Button3: TButton;
     Button4: TButton;
     Button5: TButton;
+    Button6: TButton;
     CheckBox1: TCheckBox;
     CheckBox10: TCheckBox;
     CheckBox11: TCheckBox;
@@ -111,7 +112,6 @@ type
     Label19: TLabel;
     Label2: TLabel;
     Label20: TLabel;
-    Label21: TLabel;
     Label22: TLabel;
     Label23: TLabel;
     Label3: TLabel;
@@ -157,6 +157,7 @@ type
     procedure Button1Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
     procedure Button5Click(Sender: TObject);
+    procedure Button6Click(Sender: TObject);
     procedure CheckBox1Change(Sender: TObject);
     procedure CheckBox2Change(Sender: TObject);
     procedure CheckBox8Change(Sender: TObject);
@@ -192,14 +193,14 @@ type
     procedure RadioButton2Change(Sender: TObject);
     function PDPlog_new_csv(dd1:string;dd2:string;server:integer;fname:string):boolean;//запись в логи о готовности файла на отправку
     function PDPlog_new_XML(sname:string;fname:string;stampLog:string):boolean; //запись в логи о готовности справочника на отправку
-    procedure PDPlog_send(fsend:string);
+    procedure PDPlog_send(fsend:string; ftpcode:integer);
     procedure TimerControlTimer(Sender: TObject);
     procedure GetAnswerSprav();   //собрать ответы с сервера
     procedure PDPlog_get(fsend:string;flag:integer);
     procedure PDPlog_delete(fsend:string);
     function CntDown(tt:string):string;
     procedure GetSuccess();//успешный прием файла Ответов
-    procedure SendSuccess();//успешный передача файла ПДП
+    procedure SendSuccess(fcode:integer);//успешный передача файла ПДП
     procedure ClearALL();//сброс всех состояний
     function Data_RESEND():boolean;//повторная передача файла
     function Data_RESENDempty():boolean;//повторная передача пустых файлов
@@ -266,11 +267,11 @@ var
   //cBase='platforma_stav_av';
   servsize=19;
   sendsize=4;
-  globaltimer=600;
+  globaltimer=500;
   sprupdatetimes=2;
   lenarrans=4;
   maxuploadtime=30;
-  waitforanswer=18;
+  waitforanswer=15;
   upperactual=80;
 
 
@@ -545,7 +546,6 @@ end;
 //
 //  XMLDoc.Active := False;
 //end;
-
 
 
 procedure TForm1.Button4Click(Sender: TObject);
@@ -869,7 +869,6 @@ begin
  form1.Label7.Caption:='---:---:---';
  form1.Shape2.Brush.Color:=clWhite;
  If length(arans)>0 then setlength(arans,0,0);
- attempt:=0;
 end;
 
 procedure TForm1.start_auto_upload();
@@ -887,7 +886,7 @@ begin
 end;
 
 
-procedure TForm1.SendSuccess();
+procedure TForm1.SendSuccess(fcode:integer);
 //var
   //fileuploaded:string;
 begin
@@ -897,7 +896,6 @@ begin
    form1.TimerControl.Enabled:=false;
    form1.Label5.Caption:=floattostr(form1.TimerControl.Interval div 1000);
    //form1.TimerControl.Enabled:=true;
-
 
    //inc(uplnow);
    //inc(uplall);
@@ -919,7 +917,7 @@ begin
     form1.Label17.Caption:=inttostr(uplnow);
     form1.Label19.Caption:=inttostr(uplall);
     active_process:=false;
-    PDPlog_send(xml_name);
+    PDPlog_send(xml_name, fcode);
     fl_send:=false;
     form1.stop_auto_upload();
 
@@ -1121,7 +1119,7 @@ function TForm1.PADL(Src: string; AddSrc: string; Lg: Integer): string;
  end;
 
 //запись в логи об отправке файла
-procedure TForm1.PDPlog_send(fsend:string);
+procedure TForm1.PDPlog_send(fsend:string; ftpcode:integer);
 begin
   //exit;//$
   //If Sett.lsend_log=0 then exit;
@@ -1131,7 +1129,7 @@ begin
     Form1.mess_log('--e89--Ошибка! НЕ ОПРЕДЕЛЕН файл для передачи !');
     exit; //неудача
   end;
-  If not fl_send then exit;
+  //If not fl_send then exit;
 
   If form1.ZConnection1.Connected then
    begin
@@ -1154,23 +1152,27 @@ begin
     else form1.ZConnection1.Rollback;
       //создаем запись о созданном файле
       form1.ZReadOnlyQuery1.SQL.Clear;
-      form1.ZReadOnlyQuery1.SQL.add(' Update av_pdp_log set stamp_send=now() WHERE file_send='+quotedstr(fsend));
+
+      if fl_send or (ftpcode=227) then
+        form1.ZReadOnlyQuery1.SQL.add('Update av_pdp_log set stamp_send=now() WHERE file_send='+quotedstr(fsend))
+      else
+        form1.ZReadOnlyQuery1.SQL.add('Update av_pdp_log set error_main='+inttostr(ftpcode)+' WHERE file_send='+quotedstr(fsend));
       //showmessage(form1.ZReadOnlyQuery1.SQL.text);//$
        //Form1.mess_log(form1.ZReadOnlyQuery1.SQL.text);//$
        form1.ZReadOnlyQuery1.ExecSQL;
        form1.ZConnection1.Commit;
   except
        if form1.ZConnection1.InTransaction then form1.ZConnection1.Rollback;
-        mess_log('--e17--ОШИБКА логирования ! Файл отправлен: '+xml_name);
+        mess_log('--e17--ОШИБКА логирования ! Файл отправлен: '+fsend);
         //Form1.mess_log(form1.ZReadOnlyQuery1.SQL.text);
         form1.ZReadOnlyQuery1.close;
         form1.ZConnection1.disconnect;
         exit;
   end;
-     mess_log(formatDateTime('hh:mm:nn.zzz',now())+'--s02--логгирование успешной отправки данных');
-
      form1.ZReadOnlyQuery1.close;
      form1.ZConnection1.disconnect;
+
+     mess_log(formatDateTime('hh:mm:nn.zzz',now())+'--s02--логирование отправки данных');
 end;
 
 
@@ -1288,17 +1290,17 @@ begin
       //если ответа нет
        If (flag=0) then
         begin
-         //помечаем файл как не отправленный, если долго не было ответа
-         form1.ZReadOnlyQuery1.SQL.add('Update av_pdp_log set stamp_send=null  WHERE file_send='+quotedstr(copy(fsend,9,pos('.zip.ack',fsend)-9)));
+       // отмечаем последнию попытку получить файл
+         form1.ZReadOnlyQuery1.SQL.add('Update av_pdp_log set remark=to_char(clock_timestamp() ,''YYYY-MM-DD HH24:MI:SS'') ');
+         form1.ZReadOnlyQuery1.SQL.add(' WHERE file_send='+quotedstr(copy(fsend,9,pos('.zip.ack',fsend)-9)));
          form1.ZReadOnlyQuery1.SQL.add(' and (stamp_send + interval '''+inttostr(waitforanswer)+' hours'')<now();');
-           Form1.mess_log(form1.ZReadOnlyQuery1.SQL.text);//$
+       //    //Form1.mess_log(form1.ZReadOnlyQuery1.SQL.text);//$
          end
-       else
        //если есть ответ
+       else
        begin
          form1.ZReadOnlyQuery1.SQL.add('Update av_pdp_log set stamp_answer=now(),answer='+flans+',correct='+flag_correct);
        end;
-
 
       //если файл принят с ошибкой
       If (flag=2) and (length(arrans)>2) then
@@ -1316,18 +1318,6 @@ begin
       end;
        form1.ZReadOnlyQuery1.SQL.add(''' ');
       end;
-      //iF pos('xml',fsend)>0 then        //1128
-      //form1.ZReadOnlyQuery1.SQL.add(',file_answer='+quotedstr(fsend)+' WHERE file_send='+quotedstr(copy(fsend,9,pos('.ack',fsend)-9)))
-      //else
-
-
-       //если файл недавно отправлен и нет квитанции, то не помечать
-       //If (flag=0) then
-       // begin
-       //  form1.ZReadOnlyQuery1.SQL.add(' and (stamp_send + interval '''+inttostr(waitforanswer)+' hours'')<now()');
-       //  mess_log(form1.ZReadOnlyQuery1.SQL.text);//$
-       //  end
-       //else
 
     //запись лога об принятом ответе
      If (flag<>0) then
@@ -1335,7 +1325,6 @@ begin
        form1.ZReadOnlyQuery1.SQL.add(',file_answer='+quotedstr(fsend)+' WHERE file_send='+quotedstr(copy(fsend,9,pos('.zip.ack',fsend)-9)));
        mess_log(formatdatetime('hh:nn:ss.zzz',now())+'--s05-- прием файлов квитанций. Успешная запись в журнал.');
        end;
-
        //mess_log(form1.ZReadOnlyQuery1.SQL.text);//$
        //Form1.mess_log(form1.ZReadOnlyQuery1.SQL.text);//$
        form1.ZReadOnlyQuery1.ExecSQL;
@@ -1396,7 +1385,7 @@ begin
       begin
        counterr:=0;
        mess_log(formatDateTime('hh:mm:nn.zzz',now())+'--s06-- Отправка данных ПДП. Успешно!');
-       PDPlog_send(xml_name);
+       PDPlog_send(xml_name,5555);
       end;
      mess_log(formatDateTime('hh:mm:nn.zzz',now())+'--o004--');//$
      stop_auto_upload();
@@ -1449,7 +1438,7 @@ begin
 
    uploadFile:='';
   xml_name:='';
-  mess_log('__________________________'+mode+'_________________________________');
+  mess_log('__________________________'+mode+'______________________________');
   If mode<>'firsttime' then
    begin
    mess_log(formatdatetime('hh:nn:ss.zzz',now())+'  ============== ОБНОВЛЕНИЕ СПРАВОЧНИКОВ =============1=');
@@ -1967,7 +1956,7 @@ begin
 //551 	Запрошенная операция прервана. Неизвестный тип страницы.
 //552 	Запрошенная операция прервана. Выделено недостаточно памяти
 //553 	Запрошенная операция не принята. Недопустимое имя файла.
-
+//562 File already exist
   If pos('|~|',s)>0 then
    begin
     ns:=pos('|~|',s);
@@ -1976,7 +1965,7 @@ begin
   If copy(s,ns+7,3)='200' then exit;
   If copy(s,ns+7,3)='211' then exit;
   If copy(s,ns+7,3)='220' then exit;
-  //If copy(s,ns+7,3)='227' then exit;
+  If copy(s,ns+7,3)='227' then exit;
   If copy(s,ns+7,3)='230' then exit;
   If copy(s,ns+7,3)='231' then exit;
   If copy(s,ns+7,3)='250' then exit;
@@ -2009,7 +1998,10 @@ begin
    AssignFile(log_file,namelog);
    if fileexistsUTF8(namelog) then
        Append(log_file) else
+       begin
        Rewrite(log_file); // открытие файла для записи
+       form1.MemoLog.Clear; //очистить экран
+       end;
   {$I+} // включение контроля ошибок ввода-вывода
   if IOResult<>0 then // если есть ошибка открытия, то
    begin
@@ -3695,6 +3687,8 @@ begin
      Form1.mess_log(formatdatetime('hh:nn:ss.zzz',now())+'--i12--no ftp messages');
      exit;
      end;
+  //Form1.mess_log('--i12--ftp status: '+inttostr(n));
+
   //Form1.mess_log(formatdatetime('hh:nn:ss.zzz',now())+s);
   //exit;
   //загрузка ответов
@@ -3800,15 +3794,26 @@ begin
      begin
       Form1.mess_log(formatdatetime('hh:nn:ss.zzz',now())+'--s12--Успешно ОТПРАВЛЕН файл: '+RightStr(uploadfile,32));
       fl_send:=true;
-      form1.SendSuccess();
+      form1.SendSuccess(226);
       exit;
-    end;
+     end;
       If (pos(#10+'426',s)>0) then
         begin
           Form1.mess_log(formatdatetime('hh:nn:ss.zzz',now())+'--e12-- Код 426. Канал закрыт, обмен прерван. Сброс.');
           form1.ClearALL();
          exit;
          end;
+     //файл уже был отправлен
+      If (pos('562',s)>0) then
+        begin
+          Form1.mess_log(formatdatetime('hh:nn:ss.zzz',now())+'--e12-- Код 562. Файл уже был отправлен ранее!');
+          form1.SendSuccess(562);
+         exit;
+         end;
+   //227 Entering Passive Mode
+     If (pos('227',s)>0) then exit;
+  //150 File status okay; about to open data connection
+     If (pos('150',s)>0) then exit;
 
       Form1.mess_log(formatdatetime('hh:nn:ss.zzz',now())+'|~|upl|'+s);
       exit;
@@ -4132,7 +4137,7 @@ begin
   If timeout_s>=maxuploadtime then
     begin
     mess_log(formatdatetime('hh:nn:ss.zzz',now())+'  FORCE DISABLE upload timer !');
-    SendSuccess();
+    SendSuccess(5678);
     exit;
     end;
   //timeout_local:=timeout_local+1;
@@ -4140,16 +4145,18 @@ begin
   If uploadFile='' then
     begin
      mess_log(formatdatetime('hh:nn:ss.zzz',now())+'--o432--НЕ ОПРЕДЕЛЕН файл для отправки !');
-     SendSuccess();
+     SendSuccess(6789);
      exit;
     end;
+  //--следующий модуль ни разу не сработал //2022-01-12
+  //If fl_send then
+  //      begin
+  //        mess_log('--s16-- передача данных. УСПЕШНО!');
+  //        SendSuccess();
+  //        exit;
+  //      end;
 
-  If fl_send then
-        begin
-          mess_log('--s16-- передача данных. УСПЕШНО!');
-          SendSuccess();
-          exit;
-        end;
+
   //If active_process then
   // begin
   //  mess_log(formatdatetime('hh:nn:ss.zzz',now())+'  Объект занят !');
@@ -4165,7 +4172,7 @@ begin
    If not fileexistsUTF8(uploadFile) then
     begin
       Form1.mess_log(formatdatetime('hh:nn:ss.zzz',now())+'--e33--ОШИБКА ! Не найден файл для передачи ! '+ xml_name);
-      SendSuccess();
+      SendSuccess(8910);
       exit;
     end;
 
@@ -4201,7 +4208,7 @@ begin
     mess_log('--e56--Множественные ошибки открытия файла. Файл переименован в '+uploadFile+'.bad');
     RenameFileUTF8(uploadFile,uploadFile+'.bad');
     counterr:=0;
-    SendSuccess();
+    SendSuccess(227);
     exit;
    end;
    end;
@@ -4260,7 +4267,7 @@ begin
     except
       mess_log(formatdatetime('hh:nn:ss.zzz',now())+'--e324 Ошибка передачи! Уже передан файл: '+uploadFile);
       fl_send:=true;
-      form1.SendSuccess();
+      form1.SendSuccess(562);
       exit;
     end;
     end;
@@ -4712,8 +4719,10 @@ begin
 
    //ищем созданные но не отправленные данные
     form1.ZReadOnlyQuery1.SQL.Clear;
-    form1.ZReadOnlyQuery1.SQL.add('select * from av_pdp_log where stamp_to notnull and data_exist and stamp_send isnull ');
-    form1.ZReadOnlyQuery1.SQL.add(' and error_main=0 and id_point>0 order by stamp_from desc limit 1;');
+    form1.ZReadOnlyQuery1.SQL.add('select * from av_pdp_log where stamp_to notnull and data_exist');
+    form1.ZReadOnlyQuery1.SQL.add(' and not answer and (stamp_send isnull or (stamp_send + interval '''+inttostr(waitforanswer)+' hours'')<now())');
+    form1.ZReadOnlyQuery1.SQL.add(' and error_main not in (1,562) and id_point>0 order by stamp_from desc limit 1;');
+    //Form1.mess_log(form1.ZReadOnlyQuery1.SQL.text);
     //showmessage(form1.ZReadOnlyQuery1.SQL.text);//$
    try
      form1.ZReadOnlyQuery1.open;
@@ -4774,7 +4783,7 @@ begin
     else form1.ZConnection1.Rollback;
       //создаем запись о созданном файле
       form1.ZReadOnlyQuery1.SQL.Clear;
-      form1.ZReadOnlyQuery1.SQL.add(' Update av_pdp_log set error_main=1,remark='+Quotedstr('60|Не найден файл для передачи')+' WHERE file_send='+quotedstr(xml_name));
+      form1.ZReadOnlyQuery1.SQL.add('Update av_pdp_log set error_main=1,remark='+Quotedstr('60|Не найден файл для передачи')+' WHERE file_send='+quotedstr(xml_name));
       //showmessage(form1.ZReadOnlyQuery1.SQL.text);//$
        //Form1.mess_log(form1.ZReadOnlyQuery1.SQL.text);//$
        form1.ZReadOnlyQuery1.ExecSQL;
@@ -4970,9 +4979,9 @@ begin
      begin
      form1.ZReadOnlyQuery1.close;
      form1.ZConnection1.disconnect;
-     Form1.mess_log(padl(inttostr(k),'-',3)+' ['+arservers[k,0]+'] файл уже отправлен за период: '+
-     formatDateTime('dd-mm-yyyy hh:nn',incminute(strtodatetime(d1,mySettings),-30))+' - '+
-     formatDateTime('dd-mm-yyyy hh:nn',incminute(strtodatetime(d2,mySettings),-30)));
+     //Form1.mess_log(padl(inttostr(k),'-',3)+' ['+arservers[k,0]+'] файл уже отправлен за период: '+
+     //formatDateTime('dd-mm-yyyy hh:nn',incminute(strtodatetime(d1,mySettings),-30))+' - '+
+     //formatDateTime('dd-mm-yyyy hh:nn',incminute(strtodatetime(d2,mySettings),-30)));
      continue;
      end;
 
@@ -5059,8 +5068,8 @@ begin
      end;
      If flchange_maintime then
           form1.mess_log('///flchange_maintime');
-     form1.mess_log('///sendTime: '+formatdatetime('dd-mm hh:nn',sendTime)+' |time_main: '+formatdatetime('dd-mm hh:nn',time_main)
-                   +' |time_diff: '+formatdatetime('dd-mm hh:nn',time_diff)+' |time_min: '+formatdatetime('dd-mm hh:nn',time_min));
+     //form1.mess_log('///sendTime: '+formatdatetime('dd-mm hh:nn',sendTime)+' |time_main: '+formatdatetime('dd-mm hh:nn',time_main)
+                   //+' |time_diff: '+formatdatetime('dd-mm hh:nn',time_diff)+' |time_min: '+formatdatetime('dd-mm hh:nn',time_min));
    end;
 
 
@@ -5176,8 +5185,8 @@ begin
  end;
   mess_log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
   mess_log(formatdatetime('hh:nn:ss.zzz',now())+'======== ЗАПРОС ФАЙЛОВ БЕЗ ОТВЕТОВ. НАЧАЛО. ======5=');
- //если неотвеченных файлов больше чем limit в запросе, то сбрасываем
- If alimit>=attempt then attempt:=0;
+ //если неотвеченных файлов больше чем константа, то сбрасываем
+ If alimit<=attempt then attempt:=0;
   idpoint:=0;
   //setlength(arans,0,0);
 
@@ -5206,6 +5215,7 @@ begin
   //файлы требующие ответа
     form1.ZReadOnlyQuery1.SQL.Clear;
     form1.ZReadOnlyQuery1.SQL.add('select pdp_answerneed(''tt'','+quotedstr(formatdatetime('yyyy-mm-dd hh:nn:ss',time_past))+','+inttostr(attempt)+');');
+        Form1.mess_log(  form1.ZReadOnlyQuery1.SQL.text ); //$
     form1.ZReadOnlyQuery1.SQL.add('fetch all in tt;');
     //form1.ZReadOnlyQuery1.SQL.add('(select id_point,file_send,stamp_send,remark from av_pdp_log where data_exist and file_send<>'''' and stamp_answer isnull and id_point=0');
     //form1.ZReadOnlyQuery1.SQL.add('and stamp_send notnull and stamp_send>'+quotedstr(formatdatetime('yyyy-mm-dd hh:nn:ss',time_past))+' order by stamp_send asc)');
@@ -6004,6 +6014,11 @@ begin
    Form2.ShowModal;
    FreeAndNil(Form2);
    form1.ReadSettings();
+end;
+
+procedure TForm1.Button6Click(Sender: TObject);
+begin
+  form1.MemoLog.Clear;
 end;
 
 

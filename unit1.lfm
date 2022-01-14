@@ -343,35 +343,45 @@ object Form1: TForm1
   end
   object GroupBox1: TGroupBox
     AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = CheckBox1
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = Splitter1
+    AnchorSideBottom.Control = SBar
     Left = 5
-    Height = 360
-    Top = 342
+    Height = 374
+    Top = 337
     Width = 453
     Anchors = [akTop, akLeft, akRight, akBottom]
     BorderSpacing.Left = 5
-    BorderSpacing.Top = 4
+    BorderSpacing.Top = 7
     BorderSpacing.Right = 6
-    BorderSpacing.Bottom = 8
-    ClientHeight = 356
+    BorderSpacing.Bottom = 1
+    ClientHeight = 370
     ClientWidth = 449
     Enabled = False
     TabOrder = 5
     object Button1: TButton
-      Left = 8
+      AnchorSideLeft.Control = Button2
+      AnchorSideTop.Control = Button2
+      AnchorSideTop.Side = asrBottom
+      Left = 10
       Height = 28
-      Top = 286
+      Top = 285
       Width = 184
+      BorderSpacing.Top = 8
       Caption = 'СОЗДАТЬ и ОТПРАВИТЬ'
       OnClick = Button1Click
       TabOrder = 0
     end
     object Button3: TButton
-      Left = 8
+      AnchorSideLeft.Control = Button2
+      AnchorSideTop.Control = Button1
+      AnchorSideTop.Side = asrBottom
+      Left = 10
       Height = 28
-      Top = 322
+      Top = 321
       Width = 213
+      BorderSpacing.Top = 8
       Caption = 'ПРИЕМ ФАЙЛОВ ОТВЕТОВ'
       OnClick = Button3Click
       TabOrder = 1
@@ -586,10 +596,15 @@ object Form1: TForm1
       end
     end
     object Button2: TButton
-      Left = 8
+      AnchorSideLeft.Control = GroupBox1
+      AnchorSideTop.Control = GroupBox3
+      AnchorSideTop.Side = asrBottom
+      Left = 10
       Height = 28
       Top = 249
       Width = 150
+      BorderSpacing.Left = 10
+      BorderSpacing.Top = 5
       Caption = 'ПОДКЛЮЧЕНИЕ'
       OnClick = Button2Click
       TabOrder = 7
@@ -597,25 +612,28 @@ object Form1: TForm1
     object Button5: TButton
       AnchorSideRight.Control = GroupBox1
       AnchorSideRight.Side = asrBottom
-      Left = 279
+      AnchorSideBottom.Control = Button3
+      AnchorSideBottom.Side = asrBottom
+      Left = 284
       Height = 28
-      Top = 322
+      Top = 321
       Width = 150
-      Anchors = [akRight]
-      BorderSpacing.Right = 20
+      Anchors = [akRight, akBottom]
+      BorderSpacing.Right = 15
       Caption = 'НАСТРОЙКИ'
       OnClick = Button5Click
       TabOrder = 8
     end
   end
   object CheckBox1: TCheckBox
+    AnchorSideTop.Control = GroupBox2
     AnchorSideTop.Side = asrBottom
     Left = 8
     Height = 21
-    Top = 312
+    Top = 309
     Width = 127
-    Anchors = []
-    BorderSpacing.Top = 15
+    Anchors = [akTop]
+    BorderSpacing.Top = 5
     Caption = 'ручной режим'
     OnChange = CheckBox1Change
     TabOrder = 6
@@ -635,6 +653,8 @@ object Form1: TForm1
     AnchorSideLeft.Control = Owner
     AnchorSideTop.Control = CheckBox2
     AnchorSideTop.Side = asrBottom
+    AnchorSideBottom.Control = CheckBox2
+    AnchorSideBottom.Side = asrBottom
     Left = 5
     Height = 229
     Top = 75
@@ -643,16 +663,19 @@ object Form1: TForm1
     BorderSpacing.Top = 4
     ClientHeight = 225
     ClientWidth = 449
+    ParentBidiMode = False
+    ParentFont = False
+    ParentShowHint = False
     TabOrder = 8
     object Shape1: TShape
       AnchorSideLeft.Control = Bevel1
       AnchorSideTop.Control = Bevel1
       AnchorSideRight.Control = Bevel1
       AnchorSideRight.Side = asrBottom
-      Left = 2
+      Left = 1
       Height = 69
-      Top = 2
-      Width = 219
+      Top = 1
+      Width = 223
       Anchors = [akTop, akLeft, akRight]
       Pen.Style = psClear
     end
@@ -661,23 +684,23 @@ object Form1: TForm1
       AnchorSideTop.Control = GroupBox2
       AnchorSideBottom.Control = GroupBox2
       AnchorSideBottom.Side = asrBottom
-      Left = 2
-      Height = 221
-      Top = 2
-      Width = 219
+      Left = 1
+      Height = 223
+      Top = 1
+      Width = 223
       Anchors = [akTop, akLeft, akBottom]
-      BorderSpacing.Left = 2
-      BorderSpacing.Top = 2
-      BorderSpacing.Bottom = 2
+      BorderSpacing.Left = 1
+      BorderSpacing.Top = 1
+      BorderSpacing.Bottom = 1
       OnMouseUp = Bevel1MouseUp
     end
     object Label1: TLabel
       AnchorSideLeft.Control = Bevel1
       AnchorSideLeft.Side = asrCenter
       AnchorSideTop.Control = Bevel1
-      Left = 74
+      Left = 75
       Height = 25
-      Top = 38
+      Top = 37
       Width = 75
       BorderSpacing.Top = 36
       Caption = '---:---:---'
@@ -689,9 +712,9 @@ object Form1: TForm1
       AnchorSideLeft.Control = Bevel1
       AnchorSideLeft.Side = asrCenter
       AnchorSideTop.Control = Bevel1
-      Left = 65
+      Left = 66
       Height = 22
-      Top = 9
+      Top = 8
       Width = 92
       BorderSpacing.Top = 7
       Caption = 'ПЕРЕДАЧА'
@@ -704,10 +727,10 @@ object Form1: TForm1
       AnchorSideTop.Control = Bevel2
       AnchorSideRight.Control = Bevel2
       AnchorSideRight.Side = asrBottom
-      Left = 223
+      Left = 226
       Height = 69
       Top = 2
-      Width = 224
+      Width = 221
       Anchors = [akTop, akLeft, akRight]
       Pen.Style = psClear
     end
@@ -719,10 +742,10 @@ object Form1: TForm1
       AnchorSideRight.Side = asrBottom
       AnchorSideBottom.Control = GroupBox2
       AnchorSideBottom.Side = asrBottom
-      Left = 223
+      Left = 226
       Height = 221
       Top = 2
-      Width = 224
+      Width = 221
       Anchors = [akTop, akLeft, akRight, akBottom]
       BorderSpacing.Left = 2
       BorderSpacing.Top = 2
@@ -734,7 +757,7 @@ object Form1: TForm1
       AnchorSideLeft.Control = Bevel2
       AnchorSideLeft.Side = asrCenter
       AnchorSideTop.Control = Bevel2
-      Left = 298
+      Left = 299
       Height = 25
       Top = 38
       Width = 75
@@ -748,7 +771,7 @@ object Form1: TForm1
       AnchorSideLeft.Control = Bevel2
       AnchorSideLeft.Side = asrCenter
       AnchorSideTop.Control = Bevel2
-      Left = 303
+      Left = 304
       Height = 22
       Top = 9
       Width = 65
@@ -866,7 +889,7 @@ object Form1: TForm1
     object Image3: TImage
       AnchorSideLeft.Control = Bevel2
       AnchorSideTop.Control = Bevel2
-      Left = 234
+      Left = 237
       Height = 32
       Top = 24
       Width = 32
@@ -990,10 +1013,10 @@ object Form1: TForm1
       AnchorSideTop.Control = Label13
       AnchorSideRight.Control = Bevel2
       AnchorSideRight.Side = asrBottom
-      Left = 289
+      Left = 292
       Height = 18
       Top = 72
-      Width = 148
+      Width = 145
       Alignment = taRightJustify
       Anchors = [akTop, akLeft, akRight]
       BorderSpacing.Right = 10
@@ -1008,10 +1031,10 @@ object Form1: TForm1
       AnchorSideTop.Control = Label14
       AnchorSideRight.Control = Bevel2
       AnchorSideRight.Side = asrBottom
-      Left = 276
+      Left = 279
       Height = 18
       Top = 97
-      Width = 161
+      Width = 158
       Alignment = taRightJustify
       Anchors = [akTop, akLeft, akRight]
       BorderSpacing.Right = 10
@@ -1026,10 +1049,10 @@ object Form1: TForm1
       AnchorSideTop.Control = Label15
       AnchorSideRight.Control = Bevel2
       AnchorSideRight.Side = asrBottom
-      Left = 321
+      Left = 324
       Height = 18
       Top = 123
-      Width = 116
+      Width = 113
       Alignment = taRightJustify
       Anchors = [akTop, akLeft, akRight]
       BorderSpacing.Right = 10
@@ -1040,7 +1063,7 @@ object Form1: TForm1
     end
     object Label13: TLabel
       AnchorSideLeft.Control = Bevel2
-      Left = 233
+      Left = 236
       Height = 18
       Top = 72
       Width = 56
@@ -1050,7 +1073,7 @@ object Form1: TForm1
     end
     object Label14: TLabel
       AnchorSideLeft.Control = Bevel2
-      Left = 233
+      Left = 236
       Height = 18
       Top = 97
       Width = 43
@@ -1060,7 +1083,7 @@ object Form1: TForm1
     end
     object Label15: TLabel
       AnchorSideLeft.Control = Bevel2
-      Left = 233
+      Left = 236
       Height = 18
       Top = 123
       Width = 88
@@ -1188,7 +1211,7 @@ object Form1: TForm1
     object Image5: TImage
       AnchorSideLeft.Control = Bevel2
       AnchorSideTop.Control = Bevel2
-      Left = 233
+      Left = 236
       Height = 36
       Top = 22
       Width = 39
@@ -1311,7 +1334,7 @@ object Form1: TForm1
       Left = 74
       Height = 18
       Top = 74
-      Width = 137
+      Width = 140
       Alignment = taRightJustify
       Anchors = [akTop, akLeft, akRight]
       BorderSpacing.Right = 10
@@ -1337,7 +1360,7 @@ object Form1: TForm1
       Left = 61
       Height = 18
       Top = 97
-      Width = 150
+      Width = 153
       Alignment = taRightJustify
       Anchors = [akTop, akLeft, akRight]
       BorderSpacing.Right = 10
@@ -1347,26 +1370,14 @@ object Form1: TForm1
       ParentFont = False
     end
     object Label20: TLabel
-      Left = 397
+      Left = 413
       Height = 22
-      Top = 168
+      Top = 163
       Width = 10
       Caption = '0'
       Font.Height = -19
       ParentColor = False
       ParentFont = False
-      Visible = False
-    end
-    object Label21: TLabel
-      Left = 314
-      Height = 22
-      Top = 168
-      Width = 10
-      Caption = '0'
-      Font.Height = -19
-      ParentColor = False
-      ParentFont = False
-      Visible = False
     end
     object CheckBox10: TCheckBox
       Left = 14
@@ -1380,7 +1391,7 @@ object Form1: TForm1
     object CheckBox9: TCheckBox
       Left = 14
       Height = 21
-      Top = 200
+      Top = 198
       Width = 184
       Caption = 'персональные данные'
       Checked = True
@@ -1411,9 +1422,9 @@ object Form1: TForm1
     end
     object Label5: TLabel
       AnchorSideLeft.Control = Bevel2
-      Left = 233
+      Left = 236
       Height = 22
-      Top = 168
+      Top = 160
       Width = 51
       BorderSpacing.Left = 10
       Caption = 'label5'
@@ -1425,7 +1436,7 @@ object Form1: TForm1
   object FileNameEdit1: TFileNameEdit
     Left = 448
     Height = 28
-    Top = 227
+    Top = 240
     Width = 80
     FilterIndex = 0
     HideDirectories = False
@@ -1466,9 +1477,9 @@ object Form1: TForm1
     SimplePanel = False
   end
   object Label9: TLabel
-    Left = 382
+    Left = 264
     Height = 18
-    Top = 314
+    Top = 311
     Width = 44
     Caption = 'Label9'
     ParentColor = False
@@ -1480,6 +1491,18 @@ object Form1: TForm1
     Width = 52
     Caption = 'Label22'
     ParentColor = False
+  end
+  object Button6: TButton
+    AnchorSideTop.Control = GroupBox2
+    AnchorSideTop.Side = asrBottom
+    Left = 336
+    Height = 25
+    Top = 309
+    Width = 122
+    BorderSpacing.Top = 5
+    Caption = 'Очистить лог'
+    OnClick = Button6Click
+    TabOrder = 12
   end
   object ZConnection1: TZConnection
     ControlsCodePage = cCP_UTF8
