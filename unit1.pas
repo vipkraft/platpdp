@@ -1293,7 +1293,8 @@ begin
        // отмечаем последнию попытку получить файл
          form1.ZReadOnlyQuery1.SQL.add('Update av_pdp_log set remark=to_char(clock_timestamp() ,''YYYY-MM-DD HH24:MI:SS'') ');
          form1.ZReadOnlyQuery1.SQL.add(' WHERE file_send='+quotedstr(copy(fsend,9,pos('.zip.ack',fsend)-9)));
-         form1.ZReadOnlyQuery1.SQL.add(' and (stamp_send + interval '''+inttostr(waitforanswer)+' hours'')<now();');
+         form1.ZReadOnlyQuery1.SQL.add(' and (stamp_send + interval '''+inttostr(waitforanswer)+' hours'')<now() ');
+         form1.ZReadOnlyQuery1.SQL.add(' and position(''60|'' in remark)=0 ;');
        //    //Form1.mess_log(form1.ZReadOnlyQuery1.SQL.text);//$
          end
        //если есть ответ
@@ -4798,7 +4799,7 @@ begin
 
      form1.ZReadOnlyQuery1.close;
      form1.ZConnection1.disconnect;
-   end;
+  end;
 
   iF (xml_name<>'') and fl_final then    mess_log('--i16--Отправляем ранее созданный файл: '+xml_name);
  end;//$20180323
