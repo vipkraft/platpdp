@@ -165,6 +165,7 @@ type
     //procedure ButtonGetFileClick(Sender: TObject);
     //procedure ButtonPutFileClick(Sender: TObject);
     function Connect(ZCon:TZConnection;serv:integer):boolean;
+    procedure FormActivate(Sender: TObject);
     procedure Image2Click(Sender: TObject);
     procedure Image3Click(Sender: TObject);
     procedure Image4Click(Sender: TObject);
@@ -1423,7 +1424,8 @@ sres:boolean;
 sprDT:TDateTime;
 F: TextFile;
 begin
- mess_log('___sprsend___');
+    //mess_log(formatdatetime('hh:nn:ss.zzz',now())+'  ============== ОБНОВЛЕНИЕ СПРАВОЧНИКОВ ============');
+ //mess_log('___sprsend___');
   //если ручной режим - выход
   If form1.CheckBox1.Checked and (mode='present') then exit;
   //form1.Label1.Caption:='00:00:00';
@@ -1439,12 +1441,9 @@ begin
 
    uploadFile:='';
   xml_name:='';
+  If mode='firsttime' then
   mess_log('__________________________'+mode+'______________________________');
-  If mode<>'firsttime' then
-   begin
-   mess_log(formatdatetime('hh:nn:ss.zzz',now())+'  ============== ОБНОВЛЕНИЕ СПРАВОЧНИКОВ =============1=');
 
-   end;
    //stamp_spr_send:=form1.DateTimePicker1.DateTime;
     //If (stamp_spr_send_correct>stamp_spr_send) OR (mode='firsttime') then
      //stamp_spr_send_correct := stamp_spr_send;
@@ -1648,14 +1647,17 @@ begin
     form1.ZReadOnlyQuery1.close;
     form1.ZConnection1.disconnect;
 
-  form1.mess_log('  s_a: '+formatdatetime('dd-mm hh:nn',stamp_spr_actual)+'  t_m: '+formatdatetime('dd-mm hh:nn',sprDT));
+  //form1.mess_log('  s_a: '+formatdatetime('dd-mm hh:nn',stamp_spr_actual)+'  t_m: '+formatdatetime('dd-mm hh:nn',sprDT));
 
   //если еще не было данных по переданным справочникам и уже отправлялся этот вид справочников, то не обновлять
-  If (mode='firsttime') and (cnt>0) then exit;
-
+  If (mode='firsttime') and (cnt>0) then
+   begin
+    form1.mess_log(formatdatetime('hh:nn:ss.zzz',now())+' еще не было ответа по переданному справочнику данного вида');
+    exit;
+    end;
     If spr='*' then
     begin
-     form1.mess_log('        Обновление справочников НЕ требуется !');
+     //form1.mess_log('        Обновление справочников НЕ требуется !');
      //s_a: '+formatdatetime('dd-mm hh:nn',stamp_spr_actual)+'  t_m: '+formatdatetime('dd-mm hh:nn',sprDT));
      form1.stop_auto_upload();//$
      exit;
@@ -1666,7 +1668,7 @@ begin
     exit;
     end;
     //mess_log('_____________________________________________________________');
-    //mess_log(formatdatetime('hh:nn:ss.zzz',now())+'========== ОБНОВЛЕНИЕ СПРАВОЧНИКОВ ==========1=');
+    mess_log(formatdatetime('hh:nn:ss.zzz',now())+'========== ОБНОВЛЕНИЕ СПРАВОЧНИКОВ ==========1=');
 
       If active_process then
     begin
@@ -2127,15 +2129,24 @@ form1.ZReadOnlyQuery1.SQL.add(' order by ip2,id; ');
     begin
       //showmessage(utf8copy(trim(form1.ZReadOnlyQuery1.FieldByName('pname').asString),1,3));
       If (form1.ZReadOnlyQuery1.FieldByName('id').AsInteger=381)
-        or (utf8copy(trim(form1.ZReadOnlyQuery1.FieldByName('pname').asString),1,3)='Мих') then
+        or (utf8copy(trim(form1.ZReadOnlyQuery1.FieldByName('pname').asString),1,3)='Мих')
+       //АРЗГИР
+        //or (form1.ZReadOnlyQuery1.FieldByName('id').AsInteger=84)
+        //ИПАТОВО
+        //or (form1.ZReadOnlyQuery1.FieldByName('id').AsInteger=72)
+        //Рыздвянный
+        //or (form1.ZReadOnlyQuery1.FieldByName('id').AsInteger=624)
+        //or (form1.ZReadOnlyQuery1.FieldByName('id').AsInteger=1624)
+        //Донское
+        //or (form1.ZReadOnlyQuery1.FieldByName('id').AsInteger=795)
+        //or (form1.ZReadOnlyQuery1.FieldByName('id').AsInteger=1795)
+
+        then
         begin
          form1.ZReadOnlyQuery1.Next;
          continue;  //$
          end;
-      //АРЗГИР
-        //If (form1.ZReadOnlyQuery1.FieldByName('id').AsInteger=84) then continue;
-        //ИПАТОВО
-        //If (form1.ZReadOnlyQuery1.FieldByName('id').AsInteger=72) then continue;
+
       SetLength(arservers,length(arservers)+1,servsize);
            arservers[length(arservers)-1,0]:=form1.ZReadOnlyQuery1.FieldByName('id').asString;
            arservers[length(arservers)-1,1]:=form1.ZReadOnlyQuery1.FieldByName('pname').asString;
@@ -2245,7 +2256,7 @@ begin
   if aName='/' then
     aName := '';
 
-  FTP.ListFeatures;
+  //FTP.ListFeatures;
 
 
   //FDirListing := '';
@@ -3290,6 +3301,27 @@ begin
     If ZCon.Connected then result:=true;
 end;
 
+procedure TForm1.FormActivate(Sender: TObject);
+begin
+  Form1.mess_log('.Версия:'+MajorNum+'.'+MinorNum+'.'+RevisionNum+'.'+BuildNum);
+
+  time_main:=strtodatetime(formatdatetime('dd-mm-yyyy',IncDay(now(),-1))+' 01:00:00',mysettings);//нижняя граница актуального периода отправки данных
+   //уточняем time_main в следующей процедуре
+   Form1.GetLocalServers();
+   form1.ComboServ();
+   //form1.TimerControl.Enabled:=true;
+   //form1.CheckBox1.Checked:=false;
+  //stamp_spr_actual:=strtodatetime('01-01-1970 00:00:01',mySettings); //$
+   ZeroDateTime:=strtodatetime('01-01-1971 00:00:01',mySettings);
+   stamp_spr_send:=ZeroDateTime;
+   stamp_spr_send_correct:=IncDay(ZeroDateTime,-1);
+   stamp_spr_actual:=stamp_spr_send;
+   time_past:=strtodatetime('01-01-2018 23:59:50',mySettings);
+
+   //включаем основной таймер
+   form1.TCountDown.Enabled:=true;
+end;
+
 //заблокировать авто отправку файлов
 procedure TForm1.Image2Click(Sender: TObject);
 begin
@@ -3595,7 +3627,6 @@ begin
    BuildNum := IntToStr(Info.FixedInfo.FileVersion[3]);
    Info.Free;
 
-  Form1.mess_log('.Версия:'+MajorNum+'.'+MinorNum+'.'+RevisionNum+'.'+BuildNum);
   ddate:=date();
   MySettings.DateSeparator := '-';
   MySettings.TimeSeparator := ':';
@@ -3651,18 +3682,7 @@ begin
 
   //time_main:=now();
    //time_main:=strtodatetime('23-08-2016 06:00:00',mySettings);
-   time_main:=strtodatetime(formatdatetime('dd-mm-yyyy',IncDay(now(),-1))+' 01:00:00',mysettings);//нижняя граница актуального периода отправки данных
-   //уточняем time_main в следующей процедуре
-   Form1.GetLocalServers();
-   form1.ComboServ();
-   //form1.TimerControl.Enabled:=true;
-   //form1.CheckBox1.Checked:=false;
-  //stamp_spr_actual:=strtodatetime('01-01-1970 00:00:01',mySettings); //$
-   ZeroDateTime:=strtodatetime('01-01-1971 00:00:01',mySettings);
-   stamp_spr_send:=ZeroDateTime;
-   stamp_spr_send_correct:=IncDay(ZeroDateTime,-1);
-   stamp_spr_actual:=stamp_spr_send;
-   time_past:=strtodatetime('01-01-2018 23:59:50',mySettings);
+
 
 end;
 
@@ -3678,10 +3698,13 @@ begin
      If ftp.Connected then ftp.Disconnect(true);
      exit;//$
     end;
+
   try
     n:=FTP.GetMessage(s)
   except
    Form1.mess_log(formatdatetime('hh:nn:ss.zzz',now())+'--e447--getmessage exception');
+    form1.ClearALL();
+    exit;
   end;
    If n=0 then
      begin
@@ -4635,8 +4658,8 @@ begin
    form1.stop_auto_upload();
     exit;
  end;
-
-  mess_log(formatdatetime('hh:nn:ss.zzz',now())+'^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^2^^');
+  mess_log('@');
+  mess_log(formatdatetime('hh:nn:ss.zzz',now())+'^^^^^^_data_send_^^^^^^^^^^^^^^^^^^^^2^^');
   //mess_log(formatdatetime('hh:nn:ss.zzz',now())+'======== ОТПРАВКА ДАННЫХ. НАЧАЛО. ========');
   // This is unix time 2010-07-26 17:50:17
   //d := UnixToDateTime(1280166617);

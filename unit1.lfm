@@ -7,6 +7,7 @@ object Form1: TForm1
   Caption = '╭∩╮(Ο_Ο)╭∩╮'
   ClientHeight = 730
   ClientWidth = 1024
+  OnActivate = FormActivate
   OnCreate = FormCreate
   Position = poScreenCenter
   LCLVersion = '2.0.8.0'
@@ -1573,7 +1574,7 @@ object Form1: TForm1
   end
   object TimerSend: TTimer
     Enabled = False
-    Interval = 700
+    Interval = 900
     OnTimer = TimerSendTimer
     OnStartTimer = TimerSendStartTimer
     left = 572
@@ -1594,12 +1595,13 @@ object Form1: TForm1
   end
   object TimerControl: TTimer
     Enabled = False
-    Interval = 60000
+    Interval = 50000
     OnTimer = TimerControlTimer
     left = 572
     top = 388
   end
   object TCountDown: TTimer
+    Enabled = False
     OnTimer = TCountDownTimer
     left = 572
     top = 444
